@@ -101,24 +101,31 @@ public:
         os << habitat.name << ": Quality " << habitat.quality << "%, Species: " << habitat.species.size();
         return os;
     }
+
+    ~Habitat() {
+        // Clean up dynamically allocated Species objects
+        for (Species* s : species) {
+            delete s;
+        }
+    }
 };
 
 int main() {
-    // Create Species objects
-    Species tiger("Tiger", 400, "Endangered");
-    Species elephant("Elephant", 800, "Vulnerable");
+    // Dynamically create Species objects using 'new'
+    Species* tiger = new Species("Tiger", 400, "Endangered");
+    Species* elephant = new Species("Elephant", 800, "Vulnerable");
 
     // Create Habitat object
-    Habitat forest("Tropical Forest", 5, 80);
+    Habitat* forest = new Habitat("Tropical Forest", 5, 80);
 
     // Add species to habitat
-    forest.add_species(&tiger);
-    forest.add_species(&elephant);
+    forest->add_species(tiger);
+    forest->add_species(elephant);
 
     cout << "Initial state:" << endl;
-    cout << forest << endl;
-    cout << tiger << endl;
-    cout << elephant << endl;
+    cout << *forest << endl;
+    cout << *tiger << endl;
+    cout << *elephant << endl;
 
     // Simulate events
     random_device rd;
@@ -126,14 +133,17 @@ int main() {
     uniform_int_distribution<> quality_change(-5, 5);
 
     for (int i = 0; i < 5; ++i) {
-        forest.simulate_events();
-        forest.update_quality(quality_change(gen));
+        forest->simulate_events();
+        forest->update_quality(quality_change(gen));
     }
 
     cout << "\nAfter simulation:" << endl;
-    cout << forest << endl;
-    cout << tiger << endl;
-    cout << elephant << endl;
+    cout << *forest << endl;
+    cout << *tiger << endl;
+    cout << *elephant << endl;
+
+    // Clean up dynamically allocated memory
+    delete forest;  // This will also delete species within habitat due to Habitat destructor
 
     return 0;
 }
