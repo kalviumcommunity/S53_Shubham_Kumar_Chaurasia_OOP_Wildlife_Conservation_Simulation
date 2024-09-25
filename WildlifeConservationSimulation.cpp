@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <vector>
 using namespace std;
 
 class Species {
@@ -8,8 +9,8 @@ private:
     int population;
     string endangered_status;
 
-    static int total_species_count;  // Static variable to track the number of species
-    static int total_population;     // Static variable to track the total population of all species
+    static int total_species_count;
+    static int total_population;
 
     void update_status() {
         if (population == 0) {
@@ -27,10 +28,11 @@ private:
 
 public:
     // Constructor
-    Species(string name, int population, string endangered_status)
-        : name(name), population(population), endangered_status(endangered_status) {
+    Species(string name, int population)
+        : name(name), population(population) {
         total_species_count++;
         total_population += population;
+        update_status();
     }
 
     // Destructor
@@ -39,32 +41,29 @@ public:
         total_population -= population;
     }
 
-    void update_population(int change) {
-        total_population -= population; // Remove old population from total
-        population += change;
-        if (population < 0) population = 0;
-        update_status();
-        total_population += population; // Add updated population to total
-    }
-
-    string get_name() const { return name; }
-    int get_population() const { return population; }
-    string get_status() const { return endangered_status; }
-
-    // Static function to get total species count
+    // Static member function
     static int get_total_species_count() {
         return total_species_count;
     }
 
-    // Static function to get total population
     static int get_total_population() {
         return total_population;
     }
 
-    friend ostream& operator<<(ostream& os, const Species& species) {
-        os << species.name << ": Population " << species.population 
-           << ", Status: " << species.endangered_status;
-        return os;
+    // Member function to update population
+    void update_population(int change) {
+        total_population -= population; // Subtract old population
+        population += change;
+        total_population += population; // Add updated population
+        if (population < 0) {
+            population = 0;
+        }
+        update_status();
+    }
+
+    // Function to display species information
+    void display() const {
+        cout << name << ": Population " << population << ", Status: " << endangered_status << endl;
     }
 };
 
@@ -73,40 +72,28 @@ int Species::total_species_count = 0;
 int Species::total_population = 0;
 
 int main() {
-    // Create Species objects
-    Species* tiger = new Species("Tiger", 400, "Endangered");
-    Species* elephant = new Species("Elephant", 800, "Vulnerable");
-    Species* panda = new Species("Panda", 100, "Endangered");
+    // Creating species
+    Species tiger("Tiger", 400);
+    Species elephant("Elephant", 800);
 
-    // Print initial species data and static variables
-    cout << "Initial Species data:" << endl;
-    cout << *tiger << endl;
-    cout << *elephant << endl;
-    cout << *panda << endl;
+    // Display initial species details
+    tiger.display();
+    elephant.display();
 
-    cout << "\nTotal species count: " << Species::get_total_species_count() << endl;
+    // Accessing static member function
+    cout << "Total species count: " << Species::get_total_species_count() << endl;
     cout << "Total population: " << Species::get_total_population() << endl;
 
-    // Update population of species
-    tiger->update_population(-50);  // Decrease tiger population
-    elephant->update_population(200);  // Increase elephant population
-    panda->update_population(-80);  // Decrease panda population
+    // Updating species population
+    tiger.update_population(-100);
+    elephant.update_population(50);
 
-    // Print updated species data and static variables
-    cout << "\nUpdated Species data:" << endl;
-    cout << *tiger << endl;
-    cout << *elephant << endl;
-    cout << *panda << endl;
+    // Display updated species details
+    cout << "\nAfter population update:\n";
+    tiger.display();
+    elephant.display();
 
-    cout << "\nTotal species count: " << Species::get_total_species_count() << endl;
-    cout << "Total population: " << Species::get_total_population() << endl;
-
-    // Deallocate memory
-    delete tiger;
-    delete elephant;
-    delete panda;
-
-    cout << "\nAfter deleting species:" << endl;
+    // Accessing static member function again
     cout << "Total species count: " << Species::get_total_species_count() << endl;
     cout << "Total population: " << Species::get_total_population() << endl;
 
