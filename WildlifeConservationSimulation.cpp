@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <vector>
 using namespace std;
 
 class Species {
@@ -45,30 +44,32 @@ public:
 };
 
 int main() {
-    // Create an array of Species objects
-    Species speciesArray[3] = {
-        Species("Tiger", 400, "Endangered"),
-        Species("Elephant", 800, "Vulnerable"),
-        Species("Panda", 100, "Endangered")
-    };
+    // Dynamically allocate memory for Species objects
+    Species* tiger = new Species("Tiger", 400, "Endangered");
+    Species* elephant = new Species("Elephant", 800, "Vulnerable");
+    Species* panda = new Species("Panda", 100, "Endangered");
 
     // Print initial species data
     cout << "Initial Species data:" << endl;
-    for (int i = 0; i < 3; ++i) {
-        cout << speciesArray[i] << endl;
-    }
+    cout << *tiger << endl;
+    cout << *elephant << endl;
+    cout << *panda << endl;
 
-    // Update population of the species
-    cout << "\nUpdating populations...\n" << endl;
-    speciesArray[0].update_population(-50);  // Decrease tiger population
-    speciesArray[1].update_population(200);  // Increase elephant population
-    speciesArray[2].update_population(-80);  // Decrease panda population
+    // Update population of species
+    tiger->update_population(-50);  // Decrease tiger population
+    elephant->update_population(200);  // Increase elephant population
+    panda->update_population(-80);  // Decrease panda population
 
     // Print updated species data
-    cout << "Updated Species data:" << endl;
-    for (int i = 0; i < 3; ++i) {
-        cout << speciesArray[i] << endl;
-    }
+    cout << "\nUpdated Species data:" << endl;
+    cout << *tiger << endl;
+    cout << *elephant << endl;
+    cout << *panda << endl;
+
+    // Deallocate memory using delete
+    delete tiger;
+    delete elephant;
+    delete panda;
 
     return 0;
 }
