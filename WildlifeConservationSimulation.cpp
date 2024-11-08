@@ -1,21 +1,38 @@
 #include <iostream>  
 #include <string>  
 #include <vector>  
+#include <memory>  
 using namespace std;  
 
-// Base class: Animal  
+// Base class for Animal  
 class Animal {  
 protected:  
     string name;  
     int age;  
 
 public:  
-    // Constructor  
-    Animal(string n = "Unknown", int a = 0) : name(n), age(a) {}  
+    // Constructor Overloading (First Type of Polymorphism)  
+    Animal() : name("Unknown"), age(0) {}  
+    Animal(string n) : name(n), age(0) {}  
+    Animal(string n, int a) : name(n), age(a) {}  
 
-    // Virtual function for making sound  
-    virtual void makeSound() {  
-        cout << "Animal sound" << endl;  
+    // Virtual function for runtime polymorphism  
+    virtual void displayInfo() {  
+        cout << "Name: " << name << ", Age: " << age << endl;  
+    }  
+
+    // Function Overloading (Second Type of Polymorphism)  
+    void makeSound() {  
+        cout << "Generic animal sound" << endl;  
+    }  
+
+    void makeSound(int volume) {  
+        cout << "Generic animal sound at volume " << volume << endl;  
+    }  
+
+    // Virtual destructor for proper memory management  
+    virtual ~Animal() {  
+        cout << "Animal destructor called" << endl;  
     }  
 
     // Getter methods  
@@ -23,95 +40,97 @@ public:
     int getAge() const { return age; }  
 };  
 
-// Single Inheritance: Mammal inherits from Animal  
-class Mammal : public Animal {  
+// Derived class: Predator  
+class Predator : public Animal {  
 private:  
-    bool isWarmBlooded;  
+    string huntingTechnique;  
 
 public:  
-    // Constructor with initialization list  
-    Mammal(string n, int a, bool warmBlooded)   
-        : Animal(n, a), isWarmBlooded(warmBlooded) {}  
+    // Constructor Overloading  
+    Predator(string n, int a, string technique)   
+        : Animal(n, a), huntingTechnique(technique) {}  
 
-    // Override makeSound method  
-    void makeSound() override {  
-        cout << name << " makes a mammal sound" << endl;  
+    // Method Overriding (Runtime Polymorphism)  
+    void displayInfo() override {  
+        Animal::displayInfo();  
+        cout << "Hunting Technique: " << huntingTechnique << endl;  
     }  
 
-    // Additional method specific to Mammal  
-    void nurtureBabies() {  
-        cout << name << " nurtures its young" << endl;  
+    // Overloaded method specific to Predator  
+    void makeSound() {  
+        cout << name << " roars loudly!" << endl;  
+    }  
+
+    void makeSound(bool isAggressive) {  
+        if (isAggressive) {  
+            cout << name << " roars aggressively!" << endl;  
+        } else {  
+            cout << name << " makes a calm predator sound" << endl;  
+        }  
     }  
 };  
 
-// Multiple Inheritance Example  
-class EndangeredSpecies {  
-protected:  
-    int populationCount;  
-    string conservationStatus;  
-
-public:  
-    EndangeredSpecies(int count = 0, string status = "Not Endangered")   
-        : populationCount(count), conservationStatus(status) {}  
-
-    void displayConservationStatus() {  
-        cout << "Population: " << populationCount   
-             << ", Status: " << conservationStatus << endl;  
-    }  
-};  
-
-// Multilevel Inheritance: Tiger inherits from Mammal and EndangeredSpecies  
-class Tiger : public Mammal, public EndangeredSpecies {  
+// Operator Overloading example  
+class ConservationEffort {  
 private:  
-    string habitat;  
+    int fundedAmount;  
 
 public:  
-    // Constructor with comprehensive initialization  
-    Tiger(string name, int age, int population, string status, string tigerHabitat)  
-        : Mammal(name, age, true),   
-          EndangeredSpecies(population, status),  
-          habitat(tigerHabitat) {}  
+    ConservationEffort(int amount = 0) : fundedAmount(amount) {}  
 
-    // Specialized method  
-    void displayTigerDetails() {  
-        cout << "Tiger Details:" << endl;  
-        cout << "Name: " << getName() << endl;  
-        cout << "Age: " << getAge() << endl;  
-        cout << "Habitat: " << habitat << endl;  
-        displayConservationStatus();  
+    // Operator overloading for addition  
+    ConservationEffort operator+(const ConservationEffort& other) {  
+        return ConservationEffort(this->fundedAmount + other.fundedAmount);  
+    }  
+
+    // Operator overloading for stream insertion  
+    friend ostream& operator<<(ostream& os, const ConservationEffort& effort) {  
+        os << "Funded Amount: $" << effort.fundedAmount;  
+        return os;  
     }  
 };  
+
+// Demonstration function with polymorphic behavior  
+void demonstratePolymorphism() {  
+    // Using polymorphic pointers  
+    vector<unique_ptr<Animal>> animals;  
+
+    // Create different types of animals  
+    animals.push_back(make_unique<Animal>("Generic Animal", 5));  
+    animals.push_back(make_unique<Predator>("Lion", 7, "Stalking"));  
+
+    // Polymorphic method calls  
+    cout << "\nPolymorphic Method Demonstration:" << endl;  
+    for (const auto& animal : animals) {  
+        animal->displayInfo();  
+    }  
+}  
 
 int main() {  
-    // User Input  
-    string name, habitat, status;  
-    int age, population;  
+    // Demonstrate Constructor Overloading  
+    cout << "Constructor Overloading Examples:" << endl;  
+    Animal generic;  
+    Animal namedAnimal("Tiger");  
+    Animal fullDetailsAnimal("Elephant", 10);  
 
-    // Prompt for Tiger details  
-    cout << "Enter Tiger Name: ";  
-    getline(cin, name);  
+    // Demonstrate Method Overloading  
+    cout << "\nMethod Overloading Examples:" << endl;  
+    Predator lion("Lion", 8, "Hunting in Prides");  
+    lion.makeSound();  // No volume  
+    lion.makeSound(5);  // With volume  
+    lion.makeSound(true);  // Aggressive sound  
 
-    cout << "Enter Tiger Age: ";  
-    cin >> age;  
-    cin.ignore(); // Clear input buffer  
+    // Demonstrate Operator Overloading  
+    cout << "\nOperator Overloading:" << endl;  
+    ConservationEffort effort1(50000);  
+    ConservationEffort effort2(75000);  
+    ConservationEffort totalEffort = effort1 + effort2;  
+    cout << "Effort 1: " << effort1 << endl;  
+    cout << "Effort 2: " << effort2 << endl;  
+    cout << "Total Effort: " << totalEffort << endl;  
 
-    cout << "Enter Tiger Habitat: ";  
-    getline(cin, habitat);  
-
-    cout << "Enter Population Count: ";  
-    cin >> population;  
-    cin.ignore(); // Clear input buffer  
-
-    cout << "Enter Conservation Status: ";  
-    getline(cin, status);  
-
-    // Create Tiger object  
-    Tiger tiger(name, age, population, status, habitat);  
-
-    // Demonstrate inherited and overridden methods  
-    tiger.makeSound();  
-    tiger.nurtureBabies();  
-    tiger.displayTigerDetails();  
+    // Demonstrate Polymorphic Behavior  
+    demonstratePolymorphism();  
 
     return 0;  
 }
