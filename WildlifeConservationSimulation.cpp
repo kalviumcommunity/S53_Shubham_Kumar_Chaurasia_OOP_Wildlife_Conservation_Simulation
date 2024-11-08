@@ -1,48 +1,117 @@
 #include <iostream>  
 #include <string>  
+#include <vector>  
 using namespace std;  
 
+// Base class: Animal  
 class Animal {  
-private:  
+protected:  
     string name;  
     int age;  
 
 public:  
-    // Default constructor  
-    Animal() : name("Unknown"), age(0) {  
-        cout << "Default constructor called: " << name << " created." << endl;  
+    // Constructor  
+    Animal(string n = "Unknown", int a = 0) : name(n), age(a) {}  
+
+    // Virtual function for making sound  
+    virtual void makeSound() {  
+        cout << "Animal sound" << endl;  
     }  
 
-    // Parameterized constructor  
-    Animal(const string& name, int age) : name(name), age(age) {  
-        cout << "Parameterized constructor called: " << name << " created." << endl;  
+    // Getter methods  
+    string getName() const { return name; }  
+    int getAge() const { return age; }  
+};  
+
+// Single Inheritance: Mammal inherits from Animal  
+class Mammal : public Animal {  
+private:  
+    bool isWarmBlooded;  
+
+public:  
+    // Constructor with initialization list  
+    Mammal(string n, int a, bool warmBlooded)   
+        : Animal(n, a), isWarmBlooded(warmBlooded) {}  
+
+    // Override makeSound method  
+    void makeSound() override {  
+        cout << name << " makes a mammal sound" << endl;  
     }  
 
-    // Destructor  
-    ~Animal() {  
-        cout << "Destructor called: " << name << " destroyed." << endl;  
+    // Additional method specific to Mammal  
+    void nurtureBabies() {  
+        cout << name << " nurtures its young" << endl;  
     }  
+};  
 
-    // Method to display animal details  
-    void display() const {  
-        cout << "Animal Name: " << name << ", Age: " << age << endl;  
+// Multiple Inheritance Example  
+class EndangeredSpecies {  
+protected:  
+    int populationCount;  
+    string conservationStatus;  
+
+public:  
+    EndangeredSpecies(int count = 0, string status = "Not Endangered")   
+        : populationCount(count), conservationStatus(status) {}  
+
+    void displayConservationStatus() {  
+        cout << "Population: " << populationCount   
+             << ", Status: " << conservationStatus << endl;  
+    }  
+};  
+
+// Multilevel Inheritance: Tiger inherits from Mammal and EndangeredSpecies  
+class Tiger : public Mammal, public EndangeredSpecies {  
+private:  
+    string habitat;  
+
+public:  
+    // Constructor with comprehensive initialization  
+    Tiger(string name, int age, int population, string status, string tigerHabitat)  
+        : Mammal(name, age, true),   
+          EndangeredSpecies(population, status),  
+          habitat(tigerHabitat) {}  
+
+    // Specialized method  
+    void displayTigerDetails() {  
+        cout << "Tiger Details:" << endl;  
+        cout << "Name: " << getName() << endl;  
+        cout << "Age: " << getAge() << endl;  
+        cout << "Habitat: " << habitat << endl;  
+        displayConservationStatus();  
     }  
 };  
 
 int main() {  
-    // User input for animal details  
-    string name;  
-    int age;  
+    // User Input  
+    string name, habitat, status;  
+    int age, population;  
 
-    cout << "Enter animal name: ";  
-    cin >> name; // Input name  
-    cout << "Enter animal age: ";  
-    cin >> age; // Input age  
+    // Prompt for Tiger details  
+    cout << "Enter Tiger Name: ";  
+    getline(cin, name);  
 
-    // Creating animal object using parameterized constructor  
-    Animal userAnimal(name, age);  
-    userAnimal.display();  
+    cout << "Enter Tiger Age: ";  
+    cin >> age;  
+    cin.ignore(); // Clear input buffer  
 
-    // End of program will trigger destructor  
+    cout << "Enter Tiger Habitat: ";  
+    getline(cin, habitat);  
+
+    cout << "Enter Population Count: ";  
+    cin >> population;  
+    cin.ignore(); // Clear input buffer  
+
+    cout << "Enter Conservation Status: ";  
+    getline(cin, status);  
+
+    // Create Tiger object  
+    Tiger tiger(name, age, population, status, habitat);  
+
+    // Demonstrate inherited and overridden methods  
+    tiger.makeSound();  
+    tiger.nurtureBabies();  
+    tiger.displayTigerDetails();  
+
     return 0;  
 }
