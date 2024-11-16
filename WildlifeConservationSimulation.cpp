@@ -1,175 +1,134 @@
 #include <iostream>
 #include <string>
-#include <vector>
-#include <map>
-#include <memory>
-#include <limits>
+#include <stdexcept>
 using namespace std;
 
-// Abstract base class defining core conservation strategy
-class ConservationStrategy {
-public:
-    virtual ~ConservationStrategy() = default;
+// Base class defining core animal protection contract  
+class ProtectedAnimal {  
+public:  
+    virtual ~ProtectedAnimal() = default;
 
-    // Pure virtual methods to be implemented by derived strategies
-    virtual void implementConservationPlan() = 0;
-    virtual double calculateConservationImpact() = 0;
-    virtual string getStrategyType() const = 0;
-};
+    // Core methods that must be consistently implemented  
+    virtual string getSpeciesName() const = 0;  
+    virtual int getPopulationCount() const = 0;  
+    virtual bool isEndangered() const = 0;  
 
-// Concrete strategy implementations
-class HabitatPreservationStrategy : public ConservationStrategy {
-private:
-    string preservationArea;
-    double protectedLandArea;
+    // Default implementation for conservation status  
+    virtual double calculateConservationRisk() const {  
+        return isEndangered() ? 1.0 : 0.5;  
+    }  
+};  
 
-public:
-    HabitatPreservationStrategy(const string& area, double landArea)
-        : preservationArea(area), protectedLandArea(landArea) {}
+// Correct LSP Implementation with Consistent Behavior  
+class EndangeredSpecies : public ProtectedAnimal {  
+private:  
+    string speciesName;  
+    int populationCount;  
+    bool endangered;  
 
-    void implementConservationPlan() override {
-        cout << "Implementing Habitat Preservation Strategy for " << preservationArea << endl;
-    }
+public:  
+    EndangeredSpecies(const string& name, int count, bool status)  
+        : speciesName(name), populationCount(count), endangered(status) {}  
 
-    double calculateConservationImpact() override {
-        return protectedLandArea * 0.75; // Impact calculation
-    }
+    string getSpeciesName() const override {  
+        return speciesName;  
+    }  
 
-    string getStrategyType() const override {
-        return "Habitat Preservation";
-    }
-};
+    int getPopulationCount() const override {  
+        return populationCount;  
+    }  
 
-class SpeciesReintroductionStrategy : public ConservationStrategy {
-private:
-    string targetSpecies;
-    int plannedReintroductions;
+    bool isEndangered() const override {  
+        return endangered;  
+    }  
 
-public:
-    SpeciesReintroductionStrategy(const string& species, int reintroductions)
-        : targetSpecies(species), plannedReintroductions(reintroductions) {}
+    // More nuanced risk calculation  
+    double calculateConservationRisk() const override {  
+        if (populationCount < 50) return 1.0;  // High risk  
+        if (populationCount < 200) return 0.75;  // Moderate risk  
+        return 0.25;  // Low risk  
+    }  
+};  
 
-    void implementConservationPlan() override {
-        cout << "Implementing Species Reintroduction Strategy for " << targetSpecies << endl;
-    }
+class MammalSpecies : public ProtectedAnimal {  
+private:  
+    string speciesName;  
+    int populationCount;  
+    string habitatType;  
 
-    double calculateConservationImpact() override {
-        return plannedReintroductions * 2.5; // Impact calculation
-    }
+public:  
+    MammalSpecies(const string& name, int count, const string& habitat)  
+        : speciesName(name), populationCount(count), habitatType(habitat) {}  
 
-    string getStrategyType() const override {
-        return "Species Reintroduction";
-    }
-};
+    string getSpeciesName() const override {  
+        return speciesName;  
+    }  
 
-// New strategy: Climate Adaptation
-class ClimateAdaptationStrategy : public ConservationStrategy {
-public:
-    void implementConservationPlan() override {
-        cout << "Implementing Climate Adaptation Strategy" << endl;
-    }
+    int getPopulationCount() const override {  
+        return populationCount;  
+    }  
 
-    double calculateConservationImpact() override {
-        return 10.0; // Example impact calculation
-    }
+    bool isEndangered() const override {  
+        return populationCount < 100;  
+    }  
 
-    string getStrategyType() const override {
-        return "Climate Adaptation";
-    }
-};
+    double calculateConservationRisk() const override {  
+        if (habitatType == "Critically Threatened") return 1.0;  
+        return ProtectedAnimal::calculateConservationRisk();  
+    }  
+};  
 
-// Conservation Manager using OCP
-class ConservationManager {
-private:
-    vector<unique_ptr<ConservationStrategy>> strategies;
+// New valid subclass adhering to LSP  
+class BirdSpecies : public ProtectedAnimal {  
+private:  
+    string speciesName;  
+    int populationCount;  
+    bool migratory;  
 
-public:
-    // Add a new strategy dynamically
-    void addStrategy(unique_ptr<ConservationStrategy> strategy) {
-        strategies.push_back(move(strategy));
-    }
+public:  
+    BirdSpecies(const string& name, int count, bool isMigratory)  
+        : speciesName(name), populationCount(count), migratory(isMigratory) {}  
 
-    void executeAllStrategies() {
-        for (auto& strategy : strategies) {
-            strategy->implementConservationPlan();
-            double impact = strategy->calculateConservationImpact();
-            cout << "Strategy Impact: " << impact
-                 << " for " << strategy->getStrategyType() << endl;
-        }
-    }
-};
+    string getSpeciesName() const override {  
+        return speciesName;  
+    }  
 
-// Base class for all wildlife entities
-class WildlifeEntity {
-protected:
-    string name;
-    int conservationStatus;
+    int getPopulationCount() const override {  
+        return populationCount;  
+    }  
 
-public:
-    virtual ~WildlifeEntity() = default;
+    bool isEndangered() const override {  
+        return populationCount < 50;  
+    }  
 
-    virtual void generateConservationReport() const = 0;
+    double calculateConservationRisk() const override {  
+        if (migratory) return ProtectedAnimal::calculateConservationRisk() + 0.25;  
+        return ProtectedAnimal::calculateConservationRisk();  
+    }  
+};  
 
-    virtual void displayBasicInfo() const {
-        cout << "Name: " << name << endl;
-        cout << "Conservation Status: " << getConservationStatusDescription() << endl;
-    }
+// Conservation Risk Assessment Manager  
+class ConservationRiskManager {  
+public:  
+    static void assessConservationRisk(const ProtectedAnimal& animal) {  
+        cout << "Species: " << animal.getSpeciesName() << endl;  
+        cout << "Population: " << animal.getPopulationCount() << endl;  
+        cout << "Conservation Risk: " << animal.calculateConservationRisk() << endl;  
+    }  
+};  
 
-    virtual string getConservationStatusDescription() const = 0;
+// Demonstration of LSP  
+void demonstrateLSPInConservation() {  
+    EndangeredSpecies tiger("Bengal Tiger", 45, true);  
+    MammalSpecies elephant("African Elephant", 120, "Savanna");  
+    BirdSpecies parrot("Amazon Parrot", 30, true);  
 
-    void setName(const string& entityName) {
-        name = entityName;
-    }
+    ConservationRiskManager::assessConservationRisk(tiger);  
+    ConservationRiskManager::assessConservationRisk(elephant);  
+    ConservationRiskManager::assessConservationRisk(parrot);  
+}  
 
-    void setConservationStatus(int status) {
-        conservationStatus = status;
-    }
-
-    string getName() const { return name; }
-    int getStatus() const { return conservationStatus; }
-};
-
-// Class for endangered species management
-class EndangeredSpecies : public WildlifeEntity {
-private:
-    int populationCount;
-    string habitat;
-
-public:
-    EndangeredSpecies(const string& speciesName, int status, int population, const string& speciesHabitat)
-        : populationCount(population), habitat(speciesHabitat) {
-        name = speciesName;
-        conservationStatus = status;
-    }
-
-    void generateConservationReport() const override {
-        cout << "\n=== Endangered Species Conservation Report ===" << endl;
-        displayBasicInfo();
-        cout << "Population Count: " << populationCount << endl;
-        cout << "Primary Habitat: " << habitat << endl;
-    }
-
-    string getConservationStatusDescription() const override {
-        switch (conservationStatus) {
-            case 1: return "Critical";
-            case 2: return "Endangered";
-            case 3: return "Vulnerable";
-            default: return "Unknown";
-        }
-    }
-};
-
-// Main function demonstrating OCP
-int main() {
-    ConservationManager conservationManager;
-
-    // Adding and executing conservation strategies
-    conservationManager.addStrategy(make_unique<HabitatPreservationStrategy>("Amazon Rainforest", 1000.0));
-    conservationManager.addStrategy(make_unique<SpeciesReintroductionStrategy>("Pandas", 50));
-    conservationManager.addStrategy(make_unique<ClimateAdaptationStrategy>());
-
-    cout << "\n=== Executing Conservation Strategies ===" << endl;
-    conservationManager.executeAllStrategies();
-
-    return 0;
+int main() {  
+    demonstrateLSPInConservation();  
+    return 0;  
 }
